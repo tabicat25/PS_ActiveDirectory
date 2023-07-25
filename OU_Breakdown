@@ -1,0 +1,23 @@
+# requires quest AD tools
+
+
+Connect-QADService $env:USERDOMAIN
+
+
+# List of OUs
+$ous = Get-QADObject -Type OrganizationalUnit -SizeLimit 0 | select CanonicalName, Name, Description | Sort-Object CanonicalName
+
+foreach ($o in $ous){
+
+    $object_listing = $null
+    $object_listing = Get-QADObject -SearchRoot $o.CanonicalName  -SearchScope OneLevel -SizeLimit 0
+
+    foreach ($ol in ($object_listing | select Type -Unique)) {
+
+         $o | select CanonicalName, Name, Description, @{N="ObjectType";e={$ol.Type}}, @{N="Count";e={$object_listing.Where({$_.Type -eq $ol.Type}).count}}
+        
+    }
+
+}
+
+
